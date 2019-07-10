@@ -1,0 +1,91 @@
+﻿
+@model PermissionMVC5.Models.RoleViewModel
+@{
+    ViewBag.Title = "About";
+    var controllers = (List<PermissionMVC5.Models.MvcControllerInfo>)ViewBag.Controllers;
+
+}
+<h2>@ViewBag.Title.</h2>
+<h3>@ViewBag.Message</h3>
+
+
+<div class="row">
+    <div class="col-md-6">
+        <form action="/home/save" class="form-horizontal" method="post">
+            <div class="form-group">
+                <label  class="control-label col-md-3">Name</label>
+                <div class="col-md-9">
+                    <input name="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-3 control-label">Access List</label>
+                <div class="col-md-9">
+                    <ol id="tree">
+                        @foreach (var controller in controllers)
+                        {
+                            var name = controller.DisplayName ?? controller.Name;
+
+                        <li class="controller" data-value="@controller.Name">
+                                @name
+                                @if (controller.SelectedPermissions.Any())
+                                {
+                                    <ul>
+                                        @foreach (var permission in controller.SelectedPermissions)
+                                        {
+                                            
+                                            <li data-value="@permission.Name">@permission.Name</li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    </ol>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/jquery-qubit@2.0.9/jquery.qubit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-bonsai@2.1.3/jquery.bonsai.min.js"></script>
+     <script>
+        $(function () {
+            $('#tree').bonsai({
+                expandAll: false,
+                checkboxes: true,
+                createInputs: 'checkbox'
+            });
+
+            $('form').submit(function () {
+                var i = 0, j = 0;
+                $('.controller > input[type="checkbox"]:checked, .controller > input[type="checkbox"]:indeterminate').each(function () {
+                    var controller = $(this);
+                    if ($(controller).prop('indeterminate')) {
+                        $(controller).prop("checked", true);
+                    }
+                    var controllerName = 'SelectedControllers[' + i + ']';
+                    $(controller).prop('name', controllerName + '.Name');
+
+                    
+
+                    $('ul > li > input[type="checkbox"]:checked', $(controller).parent()).each(function () {
+                        var action = $(this);
+                        var actionName = controllerName + '.SelectedPermissions[' + j + '].Name';
+                        $(action).prop('name', actionName);
+                        j++;
+                    });
+                    j = 0;
+                    i++;
+                });
+
+                return true;
+            });
+        });
+    </script>
+}
